@@ -324,6 +324,49 @@ export async function deleteCategoryAction(
       return { ok: false, error: "Permission denied or category not found" };
     }
 
+    // 1. Unlink resources from this category
+    await db.resource.updateMany({
+      where: { categoryId: id },
+      data: { categoryId: null },
+    });
+
+    // 2. Unlink concepts from this category
+    await db.concept.updateMany({
+      where: { categoryId: id },
+      data: { categoryId: null },
+    });
+
+    // 3. Unlink skills from this category
+    await db.skill.updateMany({
+      where: { categoryId: id },
+      data: { categoryId: null },
+    });
+
+    // 4. Unlink and delete child sub-categories recursively
+    const childCategories = await db.category.findMany({
+      where: { parentId: id },
+      select: { id: true },
+    });
+
+    for (const child of childCategories) {
+      await db.resource.updateMany({
+        where: { categoryId: child.id },
+        data: { categoryId: null },
+      });
+      await db.concept.updateMany({
+        where: { categoryId: child.id },
+        data: { categoryId: null },
+      });
+      await db.skill.updateMany({
+        where: { categoryId: child.id },
+        data: { categoryId: null },
+      });
+      await db.category.delete({
+        where: { id: child.id },
+      });
+    }
+
+    // 5. Delete category itself
     await db.category.delete({
       where: { id },
     });

@@ -55,12 +55,11 @@ export default function SignUpPage() {
 
       if (signInResult?.error) {
         // Fallback to sign-in page if automatic sign-in had an issue
-        router.push("/sign-in");
+        window.location.href = "/sign-in";
         return;
       }
 
-      router.push("/dashboard");
-      router.refresh();
+      window.location.href = "/dashboard";
     } catch {
       setError("An unexpected error occurred. Please try again.");
       setIsLoading(false);

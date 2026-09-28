@@ -27,7 +27,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const { email, password } = validatedFields.data;
 
         const user = await db.user.findUnique({
-          where: { email: email.toLowerCase() },
+          where: { email: email.toLowerCase().trim() },
         });
 
         if (!user || !user.passwordHash || !user.isActive) {
@@ -53,11 +53,66 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   ],
   callbacks: {
     ...authConfig.callbacks,
+    async signIn({ user, account }) {
+      // If authenticating via Google OAuth, automatically sync / create user in database
+      if (account?.provider === "google") {
+        if (!user.email) return false;
+        const normalizedEmail = user.email.toLowerCase().trim();
+
+        try {
+          let existingUser = await db.user.findUnique({
+            where: { email: normalizedEmail },
+          });
+
+          if (!existingUser) {
+            let baseUsername = (user.name || normalizedEmail.split("@")[0])
+              .toLowerCase()
+              .replace(/[^a-z0-9]/g, "") || "user";
+            let username = baseUsername;
+            let counter = 1;
+            while (await db.user.findUnique({ where: { username } })) {
+              username = `${baseUsername}${counter++}`;
+            }
+
+            existingUser = await db.user.create({
+              data: {
+                email: normalizedEmail,
+                name: user.name || "Google User",
+                username,
+                avatarUrl: user.image || null,
+                role: "USER",
+              },
+            });
+          }
+
+          // Link DB user id
+          user.id = existingUser.id;
+          (user as any).role = existingUser.role;
+          (user as any).username = existingUser.username;
+          return true;
+        } catch (error) {
+          console.error("Google signIn callback error:", error);
+          return false;
+        }
+      }
+      return true;
+    },
     async jwt({ token, user, trigger, session }) {
       if (user) {
-        token.id = user.id;
-        token.role = (user as { role?: Role }).role || "USER";
-        token.username = (user as { username?: string | null }).username || null;
+        if (user.id) {
+          token.id = user.id;
+        } else if (user.email) {
+          const dbUser = await db.user.findUnique({
+            where: { email: user.email.toLowerCase().trim() },
+          });
+          if (dbUser) {
+            token.id = dbUser.id;
+            token.role = dbUser.role;
+            token.username = dbUser.username;
+          }
+        }
+        token.role = (user as any).role || token.role || "USER";
+        token.username = (user as any).username || token.username || null;
       }
 
       if (trigger === "update" && session) {

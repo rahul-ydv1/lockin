@@ -20,8 +20,15 @@ export const authConfig: NextAuthConfig = {
         nextUrl.pathname.startsWith("/sign-up");
       const isProtectedRoute =
         nextUrl.pathname.startsWith("/dashboard") ||
+        nextUrl.pathname.startsWith("/resources") ||
+        nextUrl.pathname.startsWith("/concepts") ||
+        nextUrl.pathname.startsWith("/planner") ||
+        nextUrl.pathname.startsWith("/skills") ||
+        nextUrl.pathname.startsWith("/analytics") ||
         nextUrl.pathname.startsWith("/settings") ||
-        nextUrl.pathname.startsWith("/admin");
+        nextUrl.pathname.startsWith("/admin") ||
+        nextUrl.pathname.startsWith("/review") ||
+        nextUrl.pathname.startsWith("/search");
 
       if (isProtectedRoute) {
         if (isLoggedIn) return true;
