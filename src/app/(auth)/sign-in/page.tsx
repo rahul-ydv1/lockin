@@ -17,7 +17,7 @@ import {
   CardContent,
   CardFooter,
 } from "@/components/ui/card";
-import { Loader2, AlertCircle, Sparkles } from "lucide-react";
+import { Loader2, AlertCircle } from "lucide-react";
 
 function SignInForm() {
   const searchParams = useSearchParams();
@@ -27,15 +27,14 @@ function SignInForm() {
   const [error, setError] = React.useState<string | null>(null);
   const [isLoading, setIsLoading] = React.useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = React.useState(false);
-  const [isDemoLoading, setIsDemoLoading] = React.useState(false);
 
   React.useEffect(() => {
     if (urlError === "Configuration") {
       setError(
-        "Google Sign-In is not fully configured. Please set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in your .env file, or use the 1-Click Demo Login below."
+        "Google Sign-In is not fully configured. Please set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in your .env file."
       );
     } else if (urlError === "OAuthSignin" || urlError === "OAuthCallbackError") {
-      setError("Failed to sign in with Google. Please try again or use the demo login.");
+      setError("Failed to sign in with Google. Please check your credentials or try again.");
     } else if (urlError) {
       setError("An authentication error occurred. Please try again.");
     }
@@ -44,7 +43,6 @@ function SignInForm() {
   const {
     register,
     handleSubmit,
-    setValue,
     formState: { errors },
   } = useForm<SignInInput>({
     resolver: zodResolver(signInSchema),
@@ -66,7 +64,7 @@ function SignInForm() {
       });
 
       if (result?.error) {
-        setError("Invalid email or password. Please check your credentials or use the demo login.");
+        setError("Invalid email or password. Please check your credentials.");
         setIsLoading(false);
         return;
       }
@@ -91,32 +89,6 @@ function SignInForm() {
     }
   }
 
-  async function handleDemoSignIn() {
-    setIsDemoLoading(true);
-    setError(null);
-    setValue("email", "alex@lockin.study");
-    setValue("password", "password123");
-
-    try {
-      const result = await signIn("credentials", {
-        email: "alex@lockin.study",
-        password: "password123",
-        redirect: false,
-      });
-
-      if (result?.error) {
-        setError("Demo login failed. Please try signing up a new account.");
-        setIsDemoLoading(false);
-        return;
-      }
-
-      window.location.href = callbackUrl;
-    } catch {
-      setError("Failed to sign in as demo user.");
-      setIsDemoLoading(false);
-    }
-  }
-
   return (
     <Card className="border border-border bg-surface/90 backdrop-blur-xl shadow-xl">
       <CardHeader className="text-center space-y-1.5 pb-6">
@@ -137,28 +109,13 @@ function SignInForm() {
           </div>
         )}
 
-        {/* 1-Click Demo Login */}
-        <Button
-          type="button"
-          onClick={handleDemoSignIn}
-          disabled={isDemoLoading || isLoading || isGoogleLoading}
-          className="w-full h-11 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold text-[14px] shadow-md shadow-blue-500/20 border border-blue-400/30 gap-2 transition-transform hover:scale-[1.01] active:scale-[0.99]"
-        >
-          {isDemoLoading ? (
-            <Loader2 className="w-4 h-4 animate-spin text-white" />
-          ) : (
-            <Sparkles className="w-4 h-4 text-amber-300 fill-amber-300" />
-          )}
-          <span>1-Click Demo Login (Alex Chen)</span>
-        </Button>
-
         {/* Google OAuth Button */}
         <Button
           type="button"
           variant="outline"
           className="w-full h-11 rounded-xl flex items-center justify-center gap-3 font-medium text-[14px]"
           onClick={handleGoogleSignIn}
-          disabled={isGoogleLoading || isLoading || isDemoLoading}
+          disabled={isGoogleLoading || isLoading}
         >
           {isGoogleLoading ? (
             <Loader2 className="w-4 h-4 animate-spin text-secondary" />
@@ -204,7 +161,7 @@ function SignInForm() {
               type="email"
               placeholder="you@example.com"
               autoComplete="email"
-              disabled={isLoading || isGoogleLoading || isDemoLoading}
+              disabled={isLoading || isGoogleLoading}
               {...register("email")}
             />
             {errors.email && (
@@ -222,7 +179,7 @@ function SignInForm() {
               type="password"
               placeholder="••••••••"
               autoComplete="current-password"
-              disabled={isLoading || isGoogleLoading || isDemoLoading}
+              disabled={isLoading || isGoogleLoading}
               {...register("password")}
             />
             {errors.password && (
@@ -233,7 +190,7 @@ function SignInForm() {
           <Button
             type="submit"
             className="w-full h-11 rounded-xl text-[15px] font-semibold mt-2"
-            disabled={isLoading || isGoogleLoading || isDemoLoading}
+            disabled={isLoading || isGoogleLoading}
           >
             {isLoading ? (
               <Loader2 className="w-4 h-4 animate-spin mr-2" />
