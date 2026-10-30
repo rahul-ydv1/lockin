@@ -25,7 +25,12 @@ interface CommandPaletteProps {
   onClose: () => void;
 }
 
-export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
+export function CommandPalette(props: CommandPaletteProps) {
+  if (!props.isOpen) return null;
+  return <CommandPaletteModal key="command-palette-open" {...props} />;
+}
+
+function CommandPaletteModal({ onClose }: CommandPaletteProps) {
   const router = useRouter();
   const [query, setQuery] = React.useState("");
   const [results, setResults] = React.useState<GroupedSearchResults | null>(null);
@@ -35,23 +40,15 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
 
   // Focus input when modal opens
   React.useEffect(() => {
-    if (isOpen) {
-      setTimeout(() => inputRef.current?.focus(), 50);
-      setQuery("");
-      setResults(null);
-      setSelectedIndex(0);
-    }
-  }, [isOpen]);
+    inputRef.current?.focus();
+  }, []);
 
   // Debounced search
   React.useEffect(() => {
     if (!query.trim()) {
-      setResults(null);
-      setIsSearching(false);
       return;
     }
 
-    setIsSearching(true);
     const timer = setTimeout(async () => {
       const res = await globalSearchAction(query);
       if (res.ok && res.data) {
@@ -63,6 +60,16 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
 
     return () => clearTimeout(timer);
   }, [query]);
+
+  const handleQueryChange = (val: string) => {
+    setQuery(val);
+    if (!val.trim()) {
+      setResults(null);
+      setIsSearching(false);
+    } else {
+      setIsSearching(true);
+    }
+  };
 
   // Flatten active items for keyboard navigation
   const flatItems: (SearchResultItem | { isAction: true; title: string; href: string; icon: React.ElementType })[] =
@@ -91,8 +98,6 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
   // Keyboard navigation listener (ArrowUp, ArrowDown, Enter, Escape)
   React.useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
-      if (!isOpen) return;
-
       if (e.key === "Escape") {
         e.preventDefault();
         onClose();
@@ -114,9 +119,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, flatItems, selectedIndex, router, onClose]);
-
-  if (!isOpen) return null;
+  }, [flatItems, selectedIndex, router, onClose]);
 
   const getEntityIcon = (type: string, iconUrl?: string | null) => {
     if (iconUrl) {
@@ -159,7 +162,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
             type="text"
             placeholder="Search concepts, resources, skills, projects, tasks..."
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={(e) => handleQueryChange(e.target.value)}
             className="w-full bg-transparent text-[16px] text-foreground placeholder:text-muted focus:outline-none"
           />
           {isSearching && (

@@ -75,7 +75,7 @@ async function main() {
     create: { userId: user.id, name: "Deep Learning", color: "#FF2D55" },
   });
 
-  const tagMath = await db.tag.upsert({
+  await db.tag.upsert({
     where: { userId_name: { userId: user.id, name: "Mathematics" } },
     update: {},
     create: { userId: user.id, name: "Mathematics", color: "#5856D6" },
@@ -445,7 +445,7 @@ async function main() {
     },
   });
 
-  const task3 = await db.studyTask.create({
+  await db.studyTask.create({
     data: {
       userId: user.id,
       semesterPlanId: semesterPlan.id,

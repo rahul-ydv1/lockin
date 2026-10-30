@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -20,25 +20,28 @@ import {
 import { Loader2, AlertCircle } from "lucide-react";
 
 function SignInForm() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
   const urlError = searchParams.get("error");
 
-  const [error, setError] = React.useState<string | null>(null);
+  const [formError, setFormError] = React.useState<string | null>(null);
   const [isLoading, setIsLoading] = React.useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = React.useState(false);
 
-  React.useEffect(() => {
+  const error = React.useMemo(() => {
+    if (formError) return formError;
     if (urlError === "Configuration") {
-      setError(
-        "Google Sign-In is not fully configured. Please set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in your .env file."
-      );
-    } else if (urlError === "OAuthSignin" || urlError === "OAuthCallbackError") {
-      setError("Failed to sign in with Google. Please check your credentials or try again.");
-    } else if (urlError) {
-      setError("An authentication error occurred. Please try again.");
+      return "Google Sign-In is not fully configured. Please set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in your .env file.";
     }
-  }, [urlError]);
+    if (urlError === "OAuthSignin" || urlError === "OAuthCallbackError") {
+      return "Failed to sign in with Google. Please check your credentials or try again.";
+    }
+    if (urlError) {
+      return "An authentication error occurred. Please try again.";
+    }
+    return null;
+  }, [formError, urlError]);
 
   const {
     register,
@@ -54,7 +57,7 @@ function SignInForm() {
 
   async function onSubmit(data: SignInInput) {
     setIsLoading(true);
-    setError(null);
+    setFormError(null);
 
     try {
       const result = await signIn("credentials", {
@@ -64,25 +67,26 @@ function SignInForm() {
       });
 
       if (result?.error) {
-        setError("Invalid email or password. Please check your credentials.");
+        setFormError("Invalid email or password. Please check your credentials.");
         setIsLoading(false);
         return;
       }
 
-      window.location.href = callbackUrl;
+      router.push(callbackUrl);
+      router.refresh();
     } catch {
-      setError("An unexpected error occurred. Please try again.");
+      setFormError("An unexpected error occurred. Please try again.");
       setIsLoading(false);
     }
   }
 
   async function handleGoogleSignIn() {
     setIsGoogleLoading(true);
-    setError(null);
+    setFormError(null);
     try {
       await signIn("google", { callbackUrl });
     } catch {
-      setError(
+      setFormError(
         "Could not initiate Google login. Ensure GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET are set in your .env file."
       );
       setIsGoogleLoading(false);

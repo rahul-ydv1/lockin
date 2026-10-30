@@ -7,12 +7,10 @@ import { can } from "@/lib/permissions";
 import { logActivity } from "@/lib/activity";
 import {
   createFlashcardSchema,
-  updateFlashcardSchema,
   reviewFlashcardSchema,
   type CreateFlashcardInput,
-  type UpdateFlashcardInput,
 } from "@/lib/validations/flashcard";
-import type { FlashcardItem, ReviewStats } from "@/components/flashcards/flashcard-types";
+import type { FlashcardItem, ReviewStats } from "@/types/flashcard";
 
 export interface ActionResult<T = unknown> {
   ok: boolean;
@@ -27,7 +25,7 @@ export async function getFlashcardsAction(conceptId?: string): Promise<ActionRes
       return { ok: false, error: "Unauthorized" };
     }
 
-    const cards = await (db as any).flashcard.findMany({
+    const cards = await db.flashcard.findMany({
       where: {
         userId: session.user.id,
         ...(conceptId ? { conceptId } : {}),
@@ -55,7 +53,7 @@ export async function getFlashcardsAction(conceptId?: string): Promise<ActionRes
       orderBy: { dueDate: "asc" },
     });
 
-    return { ok: true, data: cards as unknown as FlashcardItem[] };
+    return { ok: true, data: cards as FlashcardItem[] };
   } catch (error) {
     console.error("getFlashcardsAction error:", error);
     return { ok: false, error: "Failed to fetch flashcards" };
@@ -72,7 +70,7 @@ export async function getDueFlashcardsAction(): Promise<ActionResult<FlashcardIt
     const now = new Date();
     const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
 
-    const cards = await ((db as any).flashcard?.findMany({
+    const cards = await db.flashcard.findMany({
       where: {
         userId: session.user.id,
         dueDate: { lte: endOfDay },
@@ -94,9 +92,9 @@ export async function getDueFlashcardsAction(): Promise<ActionResult<FlashcardIt
         },
       },
       orderBy: { dueDate: "asc" },
-    }) || []);
+    });
 
-    return { ok: true, data: cards as unknown as FlashcardItem[] };
+    return { ok: true, data: cards as FlashcardItem[] };
   } catch (error) {
     console.error("getDueFlashcardsAction error:", error);
     return { ok: false, error: "Failed to fetch due flashcards" };
@@ -115,36 +113,36 @@ export async function getFlashcardStatsAction(): Promise<ActionResult<ReviewStat
     const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
 
     const [totalCards, dueToday, reviewedTodayList, masteredCards, learningCards] = await Promise.all([
-      (db as any).flashcard?.count({ where: { userId: session.user.id } }) || 0,
-      (db as any).flashcard?.count({
+      db.flashcard.count({ where: { userId: session.user.id } }),
+      db.flashcard.count({
         where: {
           userId: session.user.id,
           dueDate: { lte: endOfDay },
         },
-      }) || 0,
-      (db as any).flashcardReview?.findMany({
+      }),
+      db.flashcardReview.findMany({
         where: {
           userId: session.user.id,
           reviewedAt: { gte: startOfDay, lte: endOfDay },
         },
         select: { rating: true },
-      }) || [],
-      (db as any).flashcard?.count({
+      }),
+      db.flashcard.count({
         where: {
           userId: session.user.id,
           interval: { gte: 21 },
         },
-      }) || 0,
-      (db as any).flashcard?.count({
+      }),
+      db.flashcard.count({
         where: {
           userId: session.user.id,
           interval: { lt: 21 },
         },
-      }) || 0,
+      }),
     ]);
 
-    const reviewedToday = (reviewedTodayList as any[]).length;
-    const goodOrEasyReviews = (reviewedTodayList as any[]).filter((r: any) => r.rating >= 2).length;
+    const reviewedToday = reviewedTodayList.length;
+    const goodOrEasyReviews = reviewedTodayList.filter((r) => r.rating >= 2).length;
     const retentionRate = reviewedToday > 0 ? Math.round((goodOrEasyReviews / reviewedToday) * 100) : 100;
 
     const recentActivity = await db.activityLog.findMany({
@@ -159,7 +157,7 @@ export async function getFlashcardStatsAction(): Promise<ActionResult<ReviewStat
 
     let streakDays = 0;
     const uniqueDays = new Set(recentActivity.map((a) => a.createdAt.toISOString().slice(0, 10)));
-    let checkDate = new Date();
+    const checkDate = new Date();
     while (uniqueDays.has(checkDate.toISOString().slice(0, 10))) {
       streakDays++;
       checkDate.setDate(checkDate.getDate() - 1);
@@ -197,7 +195,7 @@ export async function createFlashcardAction(input: CreateFlashcardInput): Promis
 
     const { front, back, hint, conceptId, resourceId } = validated.data;
 
-    const card = await (db as any).flashcard?.create({
+    const card = await db.flashcard.create({
       data: {
         userId: session.user.id,
         front,
@@ -219,13 +217,13 @@ export async function createFlashcardAction(input: CreateFlashcardInput): Promis
       userId: session.user.id,
       action: "CREATE",
       entityType: "flashcard",
-      entityId: card?.id || "temp",
+      entityId: card.id,
       meta: { front: front.slice(0, 40), conceptId },
     });
 
     revalidatePath("/review");
     revalidatePath("/concepts");
-    return { ok: true, data: card as unknown as FlashcardItem };
+    return { ok: true, data: card as FlashcardItem };
   } catch (error) {
     console.error("createFlashcardAction error:", error);
     return { ok: false, error: "Failed to create flashcard" };
@@ -247,7 +245,7 @@ export async function reviewFlashcardAction(
       return { ok: false, error: "Invalid review parameters" };
     }
 
-    const card = await (db as any).flashcard?.findUnique({
+    const card = await db.flashcard.findUnique({
       where: { id: cardId },
     });
 
@@ -294,7 +292,7 @@ export async function reviewFlashcardAction(
     nextDueDate.setDate(nextDueDate.getDate() + interval);
 
     await db.$transaction([
-      (db as any).flashcard?.update({
+      db.flashcard.update({
         where: { id: cardId },
         data: {
           easeFactor,
@@ -304,7 +302,7 @@ export async function reviewFlashcardAction(
           lastReviewedAt: new Date(),
         },
       }),
-      (db as any).flashcardReview?.create({
+      db.flashcardReview.create({
         data: {
           flashcardId: cardId,
           userId: session.user.id,
@@ -344,7 +342,7 @@ export async function deleteFlashcardAction(id: string): Promise<ActionResult<{ 
       return { ok: false, error: "Unauthorized" };
     }
 
-    const card = await (db as any).flashcard?.findUnique({
+    const card = await db.flashcard.findUnique({
       where: { id },
     });
 
@@ -356,7 +354,7 @@ export async function deleteFlashcardAction(id: string): Promise<ActionResult<{ 
       return { ok: false, error: "Forbidden" };
     }
 
-    await (db as any).flashcard?.delete({
+    await db.flashcard.delete({
       where: { id },
     });
 

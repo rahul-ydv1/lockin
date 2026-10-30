@@ -12,10 +12,6 @@ import {
   ExternalLink,
   Code2,
   Monitor,
-  Sparkles,
-  Layers,
-  ChevronRight,
-  User as UserIcon,
 } from "lucide-react";
 import type { PublicProfileData } from "@/actions/profile";
 import { ProjectPreviewModal } from "@/components/projects/project-preview-modal";

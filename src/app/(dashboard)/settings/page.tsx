@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Layers, ArrowRight, User, ShieldCheck } from "lucide-react";
+import { Layers, ArrowRight } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { getProfileSettingsAction } from "@/actions/profile";
 import { ProfileSettingsForm } from "@/components/profile/profile-settings-form";

@@ -78,6 +78,8 @@ model User {
   studySessions   StudySession[]
   skills          Skill[]
   projects        Project[]
+  flashcards      Flashcard[]
+  flashcardReviews FlashcardReview[]
 
   @@index([createdAt])
   @@map("users")
@@ -150,6 +152,7 @@ model Resource {
   concepts         ConceptResource[]
   studyTasks       StudyTask[]
   studySessions    StudySession[]
+  flashcards       Flashcard[]
 
   @@index([userId, status])
   @@index([userId, categoryId])
@@ -179,6 +182,7 @@ model Concept {
   tags           ConceptTag[]
   studyTasks     StudyTask[]
   studySessions  StudySession[]
+  flashcards     Flashcard[]
   
   outgoingRelations ConceptRelation[] @relation("SourceRelations")
   incomingRelations ConceptRelation[] @relation("TargetRelations")
@@ -428,6 +432,47 @@ model SkillProject {
 
   @@id([skillId, projectId])
   @@map("skill_projects")
+}
+
+model Flashcard {
+  id             String            @id @default(cuid())
+  userId         String
+  conceptId      String?
+  resourceId     String?
+  front          String            @db.Text
+  back           String            @db.Text
+  hint           String?           @db.Text
+  easeFactor     Float             @default(2.5)
+  interval       Int               @default(1)
+  repetitions    Int               @default(0)
+  dueDate        DateTime          @default(now())
+  lastReviewedAt DateTime?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  user           User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  concept        Concept?          @relation(fields: [conceptId], references: [id], onDelete: SetNull)
+  resource       Resource?         @relation(fields: [resourceId], references: [id], onDelete: SetNull)
+  reviews        FlashcardReview[]
+
+  @@index([userId, dueDate])
+  @@index([userId, conceptId])
+  @@map("flashcards")
+}
+
+model FlashcardReview {
+  id          String    @id @default(cuid())
+  flashcardId String
+  userId      String
+  rating      Int
+  reviewedAt  DateTime  @default(now())
+
+  flashcard   Flashcard @relation(fields: [flashcardId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, reviewedAt])
+  @@index([flashcardId])
+  @@map("flashcard_reviews")
 }
 
 

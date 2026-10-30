@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Brain, Award, Sparkles, CheckCircle2 } from "lucide-react";
+import { Brain } from "lucide-react";
 import type { ConceptMasteryDistribution } from "./analytics-types";
 
 interface ConceptMasteryFunnelProps {

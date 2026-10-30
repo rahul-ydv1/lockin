@@ -1,36 +1,71 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# LockIn
+
+A personal knowledge graph, concept tracker, and study planner built with Next.js and Prisma.
+
+## Architecture
+
+LockIn organizes self-directed learning into an interconnected graph:
+
+- **Knowledge Graph & Concepts**: Track concepts, define prerequisites, and monitor mastery progression (Novice to Mastered).
+- **Resources & Notes**: Save and categorize articles, books, papers, and videos with rich metadata and domain previews.
+- **Spaced Repetition**: Active recall review system implementing the SM-2 algorithm.
+- **Study Planner**: Schedule study tasks, execute focused Pomodoro sessions, and track semester timelines.
+- **Skills & Projects**: Link learned concepts to practical projects and skill trees.
+- **Analytics**: Activity heatmaps, learning velocity, and mastery distributions.
+
+## Tech Stack
+
+- **Framework**: [Next.js](https://nextjs.org/) (App Router) & [React 19](https://react.dev/)
+- **Database & ORM**: PostgreSQL via [Prisma ORM](https://www.prisma.io/)
+- **Authentication**: [Auth.js / NextAuth v5](https://authjs.dev/) (OAuth & Credentials)
+- **Styling**: [Tailwind CSS v4](https://tailwindcss.com/)
+- **Validation**: [Zod](https://zod.dev/) & React Hook Form
 
 ## Getting Started
 
-First, run the development server:
+### 1. Prerequisites
+
+- Node.js 20+
+- pnpm 9+
+- PostgreSQL database
+
+### 2. Environment Setup
+
+Copy `.env.example` to `.env` and fill in the required credentials:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cp .env.example .env
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Required environment variables:
+- `DATABASE_URL`: PostgreSQL connection string
+- `DIRECT_URL`: Direct PostgreSQL connection string (for migrations)
+- `AUTH_SECRET`: Secret key for session encryption
+- `NEXTAUTH_URL`: Canonical URL (e.g., `http://localhost:3000`)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 3. Database Migration & Seed
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Generate the Prisma client, push schemas, and seed development data:
 
-## Learn More
+```bash
+pnpm db:generate
+pnpm db:push
+pnpm db:seed
+```
 
-To learn more about Next.js, take a look at the following resources:
+### 4. Run Development Server
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+pnpm dev
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Open [http://localhost:3000](http://localhost:3000) to view the application.
 
-## Deploy on Vercel
+## Scripts
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `pnpm dev`: Start the Next.js development server
+- `pnpm build`: Generate Prisma client and create production build
+- `pnpm start`: Run the production server
+- `pnpm lint`: Run ESLint across the codebase
+- `pnpm db:push`: Push schema changes directly to the database
+- `pnpm db:seed`: Seed sample data

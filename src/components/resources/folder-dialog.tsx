@@ -15,8 +15,12 @@ interface FolderDialogProps {
   onSuccess: () => void;
 }
 
-export function FolderDialog({
-  isOpen,
+export function FolderDialog(props: FolderDialogProps) {
+  if (!props.isOpen) return null;
+  return <FolderDialogForm key={props.editingCategory?.id ?? "new"} {...props} />;
+}
+
+function FolderDialogForm({
   onClose,
   editingCategory,
   onSuccess,
@@ -24,13 +28,6 @@ export function FolderDialog({
   const [name, setName] = React.useState(editingCategory?.name || "");
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
-
-  React.useEffect(() => {
-    setName(editingCategory?.name || "");
-    setError(null);
-  }, [editingCategory, isOpen]);
-
-  if (!isOpen) return null;
 
   const isEditing = !!editingCategory;
 

@@ -36,17 +36,36 @@ export function ResourcesContainer({
   const [resources, setResources] = React.useState<ResourceItem[]>(initialResources);
   const [categories, setCategories] = React.useState<CategoryNode[]>(initialCategories);
 
-  // Sync state when props change
-  React.useEffect(() => {
+  const [prevResources, setPrevResources] = React.useState(initialResources);
+  if (prevResources !== initialResources) {
+    setPrevResources(initialResources);
     setResources(initialResources);
-  }, [initialResources]);
+  }
 
-  React.useEffect(() => {
+  const [prevCategories, setPrevCategories] = React.useState(initialCategories);
+  if (prevCategories !== initialCategories) {
+    setPrevCategories(initialCategories);
     setCategories(initialCategories);
-  }, [initialCategories]);
+  }
 
   // Current open folder (null = Home screen)
-  const [selectedFolder, setSelectedFolder] = React.useState<CategoryNode | null>(null);
+  const [selectedFolderId, setSelectedFolderId] = React.useState<string | null>(null);
+
+  const selectedFolder = React.useMemo(() => {
+    if (!selectedFolderId) return null;
+    if (selectedFolderId === "unfiled") {
+      return {
+        id: "unfiled",
+        name: "Unfiled Resources",
+        slug: "unfiled",
+        level: 1,
+        parentId: null,
+        createdAt: new Date(),
+        children: [],
+      };
+    }
+    return categories.find((c) => c.id === selectedFolderId) ?? null;
+  }, [categories, selectedFolderId]);
 
   // Modals state
   const [isFolderDialogOpen, setIsFolderDialogOpen] = React.useState(false);
@@ -58,19 +77,6 @@ export function ResourcesContainer({
   const [targetTypeForResource, setTargetTypeForResource] = React.useState<ResourceType | undefined>(undefined);
 
   const [viewingResource, setViewingResource] = React.useState<ResourceItem | null>(null);
-
-  // Keep selectedFolder in sync if categories change or get renamed
-  React.useEffect(() => {
-    if (selectedFolder && selectedFolder.id !== "unfiled") {
-      const updated = categories.find((c) => c.id === selectedFolder.id);
-      if (updated) {
-        setSelectedFolder(updated);
-      } else {
-        // Folder was deleted
-        setSelectedFolder(null);
-      }
-    }
-  }, [categories, selectedFolder]);
 
   // Handle Folder Actions
   const handleOpenCreateFolder = () => {
@@ -87,8 +93,8 @@ export function ResourcesContainer({
     if (window.confirm(`Are you sure you want to delete folder "${name}"? Any items in it will become unfiled.`)) {
       // Optimistic delete
       setCategories((prev) => prev.filter((c) => c.id !== id));
-      if (selectedFolder?.id === id) {
-        setSelectedFolder(null);
+      if (selectedFolderId === id) {
+        setSelectedFolderId(null);
       }
       // Re-assign local resources to unfiled
       setResources((prev) =>
@@ -263,7 +269,7 @@ export function ResourcesContainer({
         <FolderDetailView
           folder={selectedFolder}
           resources={resources}
-          onBack={() => setSelectedFolder(null)}
+          onBack={() => setSelectedFolderId(null)}
           onAddResource={(type) =>
             handleOpenAddResource(
               selectedFolder.id === "unfiled" ? null : selectedFolder.id,
@@ -282,7 +288,7 @@ export function ResourcesContainer({
         <FolderGridView
           categories={categories}
           resources={resources}
-          onSelectFolder={(folder) => setSelectedFolder(folder)}
+          onSelectFolder={(folder) => setSelectedFolderId(folder.id)}
           onCreateFolder={handleOpenCreateFolder}
           onEditFolder={handleOpenEditFolder}
           onDeleteFolder={handleDeleteFolder}

@@ -14,8 +14,6 @@ import {
   FileText,
   Code2,
   Play,
-  File,
-  ImageIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { ResourceItem } from "@/actions/resources";
@@ -27,7 +25,7 @@ interface ResourceCardProps {
   onView: (resource: ResourceItem) => void;
   onEdit: (resource: ResourceItem) => void;
   onDelete: (id: string) => void;
-  onStatusChange: (id: string, status: ResourceStatus) => void;
+  onStatusChange?: (id: string, status: ResourceStatus) => void;
   onToggleFavorite: (id: string) => void;
 }
 
@@ -66,7 +64,6 @@ export function ResourceCard({
   onView,
   onEdit,
   onDelete,
-  onStatusChange,
   onToggleFavorite,
 }: ResourceCardProps) {
   const [menuOpen, setMenuOpen] = React.useState(false);
@@ -165,6 +162,7 @@ export function ResourceCard({
         {previewImage && !imgError ? (
           <>
             {/* Thumbnail Image */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={previewImage}
               alt={resource.title}
@@ -216,6 +214,7 @@ export function ResourceCard({
           /* Default Website / Link Favicon Fallback */
           <div className="w-full h-full flex flex-col items-center justify-center bg-muted/20 p-4 text-center">
             {faviconUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={faviconUrl}
                 alt=""
@@ -272,6 +271,7 @@ export function ResourceCard({
           <div className="flex items-center justify-between gap-1 text-[11px] text-muted-foreground">
             <div className="flex items-center gap-1.5 min-w-0">
               {faviconUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={faviconUrl}
                   alt=""

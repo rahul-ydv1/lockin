@@ -166,6 +166,7 @@ export function ResourceViewModal({
           {/* YouTube / Media Preview in Modal */}
           {resource.url && resource.url.includes("youtube.com") && (
             <div className="relative w-full aspect-[16/9] rounded-2xl overflow-hidden bg-black/40 border border-border/60 shadow-md">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={`https://img.youtube.com/vi/${
                   resource.url.split("v=")[1]?.split("&")[0] ||

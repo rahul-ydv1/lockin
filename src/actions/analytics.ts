@@ -3,7 +3,7 @@
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { format, subDays, differenceInCalendarDays, parseISO } from "date-fns";
-import type { AnalyticsData, HeatmapDay, DailyVelocityItem, SubjectDistributionItem } from "@/components/analytics/analytics-types";
+import type { AnalyticsData, HeatmapDay, DailyVelocityItem, SubjectDistributionItem } from "@/types/analytics";
 
 export interface ActionResult<T = unknown> {
   ok: boolean;
@@ -33,7 +33,6 @@ export async function getAnalyticsDataAction(): Promise<ActionResult<AnalyticsDa
     const oneYearAgo = subDays(now, 365);
     const ninetyDaysAgo = subDays(now, 90);
 
-    // Parallel aggregation fetching
     const [
       activityLogs,
       studySessions,
@@ -41,7 +40,6 @@ export async function getAnalyticsDataAction(): Promise<ActionResult<AnalyticsDa
       totalFocusSum,
       conceptCounts,
       resourceCounts,
-      categories,
     ] = await Promise.all([
       db.activityLog.findMany({
         where: {
@@ -76,10 +74,6 @@ export async function getAnalyticsDataAction(): Promise<ActionResult<AnalyticsDa
       db.resource.findMany({
         where: { userId },
         select: { status: true, category: { select: { name: true } } },
-      }),
-      db.category.findMany({
-        where: { userId, parentId: null },
-        select: { id: true, name: true },
       }),
     ]);
 

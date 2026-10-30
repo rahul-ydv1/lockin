@@ -9,8 +9,6 @@ import {
   MoreHorizontal,
   Edit2,
   Trash2,
-  Layers,
-  Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

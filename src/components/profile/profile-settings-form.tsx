@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { User, Globe, Lock, ExternalLink, Check, Loader2, AlertCircle } from "lucide-react";
+import { Globe, Lock, ExternalLink, Check, Loader2, AlertCircle } from "lucide-react";
 import { updateProfileSettingsAction } from "@/actions/profile";
 import Link from "next/link";
 

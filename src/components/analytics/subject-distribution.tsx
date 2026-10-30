@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import { PieChart, BookOpen, Layers } from "lucide-react";
 import type { SubjectDistributionItem } from "./analytics-types";
 
 interface SubjectDistributionProps {

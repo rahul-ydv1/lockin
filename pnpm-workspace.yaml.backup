@@ -1,9 +1,0 @@
-onlyBuiltDependencies:
-  - "@prisma/client"
-  - "@prisma/engines"
-  - "prisma"
-  - "esbuild"
-  - "bcryptjs"
-  - "sharp"
-  - "unrs-resolver"
-  - "@img/sharp-libvips-linux-x64"

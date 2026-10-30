@@ -5,11 +5,9 @@ import {
   Plus,
   Search,
   Award,
-  Sparkles,
   TrendingUp,
   FolderGit2,
   Layers,
-  Monitor,
   Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -70,13 +68,17 @@ export function SkillsContainer({
     name: "",
   });
 
-  React.useEffect(() => {
+  const [prevSkills, setPrevSkills] = React.useState(initialSkills);
+  if (prevSkills !== initialSkills) {
+    setPrevSkills(initialSkills);
     setSkills(initialSkills);
-  }, [initialSkills]);
+  }
 
-  React.useEffect(() => {
+  const [prevProjects, setPrevProjects] = React.useState(initialProjects);
+  if (prevProjects !== initialProjects) {
+    setPrevProjects(initialProjects);
     setProjects(initialProjects);
-  }, [initialProjects]);
+  }
 
   // Derived parent options for sub-skill creation
   const parentOptions: ParentSkillOption[] = React.useMemo(() => {

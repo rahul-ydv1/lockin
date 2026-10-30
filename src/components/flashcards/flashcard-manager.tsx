@@ -10,14 +10,13 @@ import { deleteFlashcardAction } from "@/actions/flashcards";
 
 interface FlashcardManagerProps {
   initialCards: FlashcardItem[];
-  initialDueCards: FlashcardItem[];
+  initialDueCards?: FlashcardItem[];
   initialStats: ReviewStats;
   concepts: { id: string; title: string }[];
 }
 
 export function FlashcardManager({
   initialCards,
-  initialDueCards,
   initialStats,
   concepts,
 }: FlashcardManagerProps) {

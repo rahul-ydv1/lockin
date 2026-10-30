@@ -12,6 +12,7 @@ import {
   Tag,
   ArrowRight,
   Sparkles,
+  Loader2,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { globalSearchAction } from "@/actions/search";
@@ -104,8 +105,11 @@ export function SearchResultsView({
             placeholder="Search all resources, concepts, skills, tasks..."
             value={query}
             onChange={(e) => handleSearch(e.target.value)}
-            className="pl-10 h-11 text-[15px] rounded-[14px]"
+            className="pl-10 pr-10 h-11 text-[15px] rounded-[14px]"
           />
+          {isSearching && (
+            <Loader2 className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted animate-spin" />
+          )}
         </div>
 
         {/* Filter Pills */}

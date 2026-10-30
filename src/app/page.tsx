@@ -127,11 +127,10 @@ export default function Home() {
           <div className="flex items-center gap-3">
             <span className="font-medium text-foreground">Lock In</span>
             <span className="text-muted">·</span>
-            <span>lockin.study</span>
+            <span>Personal learning system</span>
           </div>
           <div className="flex items-center gap-6 text-muted">
-            <span>Apple HIG Design System</span>
-            <span>Next.js 15 App Router</span>
+            <span>Focused study & knowledge mapping</span>
           </div>
         </div>
       </footer>

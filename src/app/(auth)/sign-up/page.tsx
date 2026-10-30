@@ -54,12 +54,12 @@ export default function SignUpPage() {
       });
 
       if (signInResult?.error) {
-        // Fallback to sign-in page if automatic sign-in had an issue
-        window.location.href = "/sign-in";
+        router.push("/sign-in");
         return;
       }
 
-      window.location.href = "/dashboard";
+      router.push("/dashboard");
+      router.refresh();
     } catch {
       setError("An unexpected error occurred. Please try again.");
       setIsLoading(false);

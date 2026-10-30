@@ -42,13 +42,6 @@ export function SkillCard({
     }
   };
 
-  const getProgressColor = (progress: number) => {
-    if (progress >= 100) return "bg-success text-success";
-    if (progress >= 60) return "bg-accent text-accent";
-    if (progress >= 30) return "bg-purple text-purple";
-    return "bg-secondary text-secondary";
-  };
-
   return (
     <div className="group relative rounded-[14px] border border-border bg-surface p-5 transition-all duration-200 hover:border-border-hover">
       {/* Top Header */}

@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createSkillSchema, type CreateSkillInput } from "@/lib/validations/skill";
 import { createSkillAction, updateSkillAction } from "@/actions/skills";
@@ -21,8 +21,12 @@ interface SkillDialogProps {
   defaultParentId?: string | null;
 }
 
-export function SkillDialog({
-  isOpen,
+export function SkillDialog(props: SkillDialogProps) {
+  if (!props.isOpen) return null;
+  return <SkillDialogForm key={props.editSkill?.id ?? props.defaultParentId ?? "new"} {...props} />;
+}
+
+function SkillDialogForm({
   onClose,
   onSuccess,
   categories,
@@ -32,7 +36,7 @@ export function SkillDialog({
 }: SkillDialogProps) {
   const [error, setError] = React.useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
-  const [showCustomIconInput, setShowCustomIconInput] = React.useState(false);
+  const [showCustomIconInput, setShowCustomIconInput] = React.useState(Boolean(editSkill?.iconUrl));
 
   const isEditing = Boolean(editSkill);
 
@@ -40,58 +44,30 @@ export function SkillDialog({
     register,
     handleSubmit,
     setValue,
-    watch,
-    reset,
+    control,
     formState: { errors },
   } = useForm<CreateSkillInput>({
     resolver: zodResolver(createSkillSchema),
     defaultValues: {
-      name: "",
-      parentId: defaultParentId || "",
-      categoryId: "",
-      description: "",
-      iconUrl: "",
-      progress: 50,
+      name: editSkill?.name || "",
+      parentId: editSkill?.parentId || defaultParentId || "",
+      categoryId: editSkill?.categoryId || "",
+      description: editSkill?.description || "",
+      iconUrl: editSkill?.iconUrl || "",
+      progress: editSkill?.progress ?? 50,
     },
   });
 
-  const skillName = watch("name") || "";
-  const manualIconUrl = watch("iconUrl") || "";
-  const progressValue = watch("progress") ?? 50;
-  const parentIdValue = watch("parentId") || "";
+  const skillName = useWatch({ control, name: "name" }) || "";
+  const manualIconUrl = useWatch({ control, name: "iconUrl" }) || "";
+  const progressValue = useWatch({ control, name: "progress" }) ?? 50;
+  const parentIdValue = useWatch({ control, name: "parentId" }) || "";
 
   // Auto-detected icon
   const detectedIcon = React.useMemo(() => {
     if (manualIconUrl) return manualIconUrl;
     return detectSkillIcon(skillName);
   }, [skillName, manualIconUrl]);
-
-  React.useEffect(() => {
-    if (editSkill) {
-      reset({
-        name: editSkill.name,
-        parentId: editSkill.parentId || "",
-        categoryId: editSkill.categoryId || "",
-        description: editSkill.description || "",
-        iconUrl: editSkill.iconUrl || "",
-        progress: editSkill.progress,
-      });
-      setShowCustomIconInput(Boolean(editSkill.iconUrl));
-    } else {
-      reset({
-        name: "",
-        parentId: defaultParentId || "",
-        categoryId: "",
-        description: "",
-        iconUrl: "",
-        progress: 50,
-      });
-      setShowCustomIconInput(false);
-    }
-    setError(null);
-  }, [editSkill, defaultParentId, isOpen, reset]);
-
-  if (!isOpen) return null;
 
   async function onSubmit(data: CreateSkillInput) {
     setIsSubmitting(true);

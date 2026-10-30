@@ -6,7 +6,7 @@ import { detectSkillIcon } from "@/lib/skill-icons";
 import type {
   SearchResultItem,
   GroupedSearchResults,
-} from "@/components/search/search-types";
+} from "@/types/search";
 
 export interface ActionResult<T = unknown> {
   ok: boolean;

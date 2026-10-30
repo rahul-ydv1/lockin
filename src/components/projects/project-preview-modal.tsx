@@ -24,24 +24,25 @@ interface ProjectPreviewModalProps {
 
 type DeviceMode = "desktop" | "tablet" | "mobile";
 
-export function ProjectPreviewModal({
+export function ProjectPreviewModal(props: ProjectPreviewModalProps) {
+  if (!props.isOpen || !props.project) return null;
+  return (
+    <ProjectPreviewContent
+      key={`${props.project.id}-${props.project.url || ""}`}
+      {...props}
+      project={props.project}
+    />
+  );
+}
+
+function ProjectPreviewContent({
   project,
-  isOpen,
   onClose,
-}: ProjectPreviewModalProps) {
+}: ProjectPreviewModalProps & { project: ProjectItem }) {
   const [device, setDevice] = React.useState<DeviceMode>("desktop");
   const [iframeKey, setIframeKey] = React.useState(0);
   const [isLoading, setIsLoading] = React.useState(true);
   const [copied, setCopied] = React.useState(false);
-
-  React.useEffect(() => {
-    if (isOpen) {
-      setIsLoading(true);
-      setIframeKey((prev) => prev + 1);
-    }
-  }, [isOpen, project?.url]);
-
-  if (!isOpen || !project) return null;
 
   const targetUrl = project.url || project.repoUrl || "";
 

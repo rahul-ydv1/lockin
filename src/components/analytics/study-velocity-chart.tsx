@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Clock, CheckSquare, TrendingUp, BarChart2 } from "lucide-react";
+import { Clock, CheckSquare } from "lucide-react";
 import type { DailyVelocityItem } from "./analytics-types";
 
 interface StudyVelocityChartProps {

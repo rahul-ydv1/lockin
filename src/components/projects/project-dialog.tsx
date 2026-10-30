@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { createProjectSchema, type CreateProjectInput, type ProjectStatus } from "@/lib/validations/project";
+import { createProjectSchema, type CreateProjectInput } from "@/lib/validations/project";
 import { createProjectAction, updateProjectAction } from "@/actions/projects";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,8 +18,12 @@ interface ProjectDialogProps {
   editProject?: ProjectItem | null;
 }
 
-export function ProjectDialog({
-  isOpen,
+export function ProjectDialog(props: ProjectDialogProps) {
+  if (!props.isOpen) return null;
+  return <ProjectDialogForm key={props.editProject?.id ?? "new"} {...props} />;
+}
+
+function ProjectDialogForm({
   onClose,
   onSuccess,
   availableSkills,
@@ -27,24 +31,25 @@ export function ProjectDialog({
 }: ProjectDialogProps) {
   const [error, setError] = React.useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
-  const [selectedSkillIds, setSelectedSkillIds] = React.useState<string[]>([]);
+  const [selectedSkillIds, setSelectedSkillIds] = React.useState<string[]>(
+    () => editProject?.skills.map((s) => s.id) || []
+  );
 
   const isEditing = Boolean(editProject);
 
   const {
     register,
     handleSubmit,
-    reset,
     formState: { errors },
   } = useForm<CreateProjectInput>({
     resolver: zodResolver(createProjectSchema),
     defaultValues: {
-      name: "",
-      description: "",
-      url: "",
-      repoUrl: "",
-      status: "IN_PROGRESS",
-      skillIds: [],
+      name: editProject?.name || "",
+      description: editProject?.description || "",
+      url: editProject?.url || "",
+      repoUrl: editProject?.repoUrl || "",
+      status: editProject?.status || "IN_PROGRESS",
+      skillIds: editProject?.skills.map((s) => s.id) || [],
     },
   });
 
@@ -61,31 +66,6 @@ export function ProjectDialog({
     }
     return list;
   }, [availableSkills]);
-
-  React.useEffect(() => {
-    if (editProject) {
-      reset({
-        name: editProject.name,
-        description: editProject.description || "",
-        url: editProject.url || "",
-        repoUrl: editProject.repoUrl || "",
-        status: editProject.status,
-      });
-      setSelectedSkillIds(editProject.skills.map((s) => s.id));
-    } else {
-      reset({
-        name: "",
-        description: "",
-        url: "",
-        repoUrl: "",
-        status: "IN_PROGRESS",
-      });
-      setSelectedSkillIds([]);
-    }
-    setError(null);
-  }, [editProject, isOpen, reset]);
-
-  if (!isOpen) return null;
 
   const toggleSkill = (skillId: string) => {
     setSelectedSkillIds((prev) =>

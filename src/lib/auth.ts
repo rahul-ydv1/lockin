@@ -65,7 +65,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           });
 
           if (!existingUser) {
-            let baseUsername = (user.name || normalizedEmail.split("@")[0])
+            const baseUsername = (user.name || normalizedEmail.split("@")[0])
               .toLowerCase()
               .replace(/[^a-z0-9]/g, "") || "user";
             let username = baseUsername;
@@ -85,10 +85,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             });
           }
 
-          // Link DB user id
           user.id = existingUser.id;
-          (user as any).role = existingUser.role;
-          (user as any).username = existingUser.username;
+          user.role = existingUser.role;
+          user.username = existingUser.username;
           return true;
         } catch (error) {
           console.error("Google signIn callback error:", error);
@@ -111,8 +110,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             token.username = dbUser.username;
           }
         }
-        token.role = (user as any).role || token.role || "USER";
-        token.username = (user as any).username || token.username || null;
+        token.role = user.role || token.role || "USER";
+        token.username = user.username || token.username || null;
       }
 
       if (trigger === "update" && session) {
